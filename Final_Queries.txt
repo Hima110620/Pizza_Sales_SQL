@@ -1,12 +1,43 @@
-Basic:
-Retrieve the total number of orders placed.
-Calculate the total revenue generated from pizza sales.
-Identify the highest-priced pizza.
-Identify the most common pizza size ordered.
-List the top 5 most ordered pizza types along with their quantities.
+#Basic:
+#Retrieve the total number of orders placed.
+select count(*) as Total_Orders from Orders;
 
+#Calculate the total revenue generated from pizza sales.
+select round(sum(od.quantity*p.price),2) as Total_Revenue
+from Pizzas p
+join order_details od
+on p.pizza_id = od.pizza_id;
 
-Intermediate:
+#Identify the highest-priced pizza.
+select pt.name, p.price
+from Pizzas p
+join pizza_types pt
+on p.pizza_type_id = pt.pizza_type_id
+order by p.price desc
+limit 1;
+
+#Identify the most common pizza size ordered.
+select p.size, count(od.order_details_id) as Orders_count
+from Pizzas p
+join order_details od
+on p.pizza_id = od.pizza_id
+group by p.size
+order by Orders_count desc
+limit 1;
+
+#List the top 5 most ordered pizza types along with their quantities.
+select pt.name, sum(od.quantity) as Total_Quantity
+from Pizza_types pt
+join pizzas p
+on pt.pizza_type_id = p.pizza_type_id
+join order_details od
+on p.pizza_id = od.pizza_id
+group by pt.name 
+order by Total_quantity desc
+limit 5;
+
+#-------------------------------------------------------------
+#Intermediate:
 Join the necessary tables to find the total quantity of each pizza category ordered.
 Determine the distribution of orders by hour of the day.
 Join relevant tables to find the category-wise distribution of pizzas.
