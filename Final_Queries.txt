@@ -76,6 +76,38 @@ order by Total_revenue desc
 limit 3;
 
 #--------------------------------------Advanced:
-Calculate the percentage contribution of each pizza type to total revenue.
-Analyze the cumulative revenue generated over time.
-Determine the top 3 most ordered pizza types based on revenue for each pizza category.
+#Calculate the percentage contribution of each pizza type to total revenue.
+select pt.category, round(sum(p.price*od.quantity),2) as Total_Revenue, round(sum(p.price*od.quantity)/(select sum(p.price*od.quantity)
+from pizzas p 
+join order_details od
+on p.pizza_id = od.pizza_id)*100,2) as Revenue_contribution
+from pizzas p 
+join order_details od
+on p.pizza_id = od.pizza_id
+join pizza_types pt
+on pt.pizza_type_id = p.pizza_type_id
+group by pt.category
+order by Revenue_contribution desc;
+
+#Analyze the cumulative revenue generated over time.
+select order_date, Revenue, Round(sum(Revenue) over(order by order_date),2) as Cumulative_Revenue from (
+select o.order_date, round(sum(p.price*od.quantity),2) as Revenue
+from pizzas p 
+join order_details od
+on p.pizza_id = od.pizza_id
+join orders o
+on o.order_id = od.order_id
+group by o.order_date
+order by o.order_date) as Sales;
+
+#Determine the top 3 most ordered pizza types based on revenue for each pizza category.
+select category, name, Revenue, rn as category_rank from (
+select category, name, Revenue, rank() over (partition by category order by revenue desc) as rn from 
+(select pt.category, pt.name, round(sum(p.price*od.quantity),2) as Revenue
+from pizzas p 
+join order_details od
+on p.pizza_id = od.pizza_id
+join pizza_types pt
+on p.pizza_type_id = pt.pizza_type_id
+group by pt.category, pt.name) as a) as b
+where rn <=3;
